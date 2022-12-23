@@ -1,7 +1,43 @@
 import typing as t
-from copy import deepcopy
-from enum import Enum
-from functools import cmp_to_key
+
+
+class Grid:
+    def __init__(self):
+        self.wall_coords = set()
+        self.sand_coords = set()
+        self.active_sand = []
+        self.spawn_locations = []
+        self.spawned_sand = 0
+        self.max_y = 0
+
+    def spawn_sand(self):
+        for location in self.spawn_locations:
+            self.active_sand.append(location)
+            self.spawned_sand += 1
+
+    def move_sand(self):
+        for index, coord in enumerate(self.active_sand):
+            next_coord = (coord[0], coord[1] + 1)
+            if (
+                next_coord not in self.wall_coords
+                and next_coord not in self.sand_coords
+            ):
+                self.active_sand[index] = next_coord
+            elif (
+                next_coord := (coord[0] - 1, coord[1] + 1)
+            ) not in self.wall_coords and next_coord not in self.sand_coords:
+                self.active_sand[index] = next_coord
+            elif (
+                next_coord := (coord[0] + 1, coord[1] + 1)
+            ) not in self.wall_coords and next_coord not in self.sand_coords:
+                self.active_sand[index] = next_coord
+            else:  # stop the sand
+                self.sand_coords.add(self.active_sand[index])
+                self.active_sand.remove(
+                    coord
+                )  # editting list currently being looped though -_-
+            if self.active_sand and self.active_sand[index][1] >= self.max_y[1]:
+                return False
 
 
 def get_input(filename: str) -> t.List[str]:
@@ -12,17 +48,40 @@ def get_input(filename: str) -> t.List[str]:
     return data
 
 
+def str_to_command(command_str: str) -> t.Tuple[int, int]:
+    return tuple(int(i) for i in command_str.split(","))
+
+
 def parse_input(input_data: t.List[str]) -> t.List:
-    parsed = []
-    pairs = [i.strip() for i in input_data.split("\n\n")]
-    for pair in pairs:
-        left, right = pair.split("\n")
-        parsed.append((eval(left), eval(right)))
-    return parsed
+    grid = Grid()
+    for line in input_data:
+        commands = [
+            str_to_command(i) for i in (command.strip() for command in line.split("->"))
+        ]
+        for index in range(len(commands) - 1):
+            x_coords = [commands[index][0], commands[index + 1][0]]
+            y_coords = [commands[index][1], commands[index + 1][1]]
+            commands_to_add = {
+                (i, j)
+                for i in range(min(x_coords), max(x_coords) + 1)
+                for j in range(min(y_coords), max(y_coords) + 1)
+            }
+            grid.wall_coords.update(commands_to_add)
+    return grid
 
 
-def day1(input_data: t.List) -> int:
-    return 0
+def day1(grid: t.Type["Grid"]) -> int:
+    grid.spawn_locations.append((500, 0))
+    grid.max_y = max(grid.wall_coords, key=lambda x: x[1])
+    sand_falling = True
+    # end condition is the first block of sand that goes above the highest wall_coords
+    while sand_falling:
+        grid.spawn_sand()
+        while grid.active_sand:
+            if grid.move_sand() == False:
+                sand_falling = False
+                break
+    return len(grid.sand_coords)
 
 
 def day2(input_data: t.List) -> int:
@@ -30,7 +89,7 @@ def day2(input_data: t.List) -> int:
 
 
 def main():
-    input = get_input("day13/input.txt")
+    input = get_input("day14/input.txt")
     parsed_input = parse_input(input)
     day1_result = day1(parsed_input)
     day2_result = day2(parsed_input)
