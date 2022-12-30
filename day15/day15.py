@@ -94,6 +94,7 @@ def day1(sensors: t.List[t.Type["Sensor"]]) -> int:
 
 
 def day2(sensors: t.List[t.Type["Sensor"]]) -> int:
+    """Go around the perimeter of each sensor instead and if it's out of the range of all the sensors it's the correct position if >= 0 and <= 4000000"""
     coords = [
         (x_coord, y_coord)
         for x_coord in range(0, 4_000_000 + 1)
