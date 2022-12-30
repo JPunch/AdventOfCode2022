@@ -1,7 +1,8 @@
 import copy
 import re
 import typing as t
-from itertools import combinations_with_replacement
+
+import numpy as np
 
 
 class Sensor:
@@ -64,21 +65,7 @@ def day1(sensors: t.List[t.Type["Sensor"]]) -> int:
     need a good way of populating all points with a manhattan distance = to sensor manhattan distance, maybe combinations or permutations
     ALTERNATELY: I can check each coord compared to the 10 sensors, just if greater manhattan for all then increase counter
     """
-    y = 2_000_000
-    # coords = set()
-    # for sensor in sensors:
-    #     coords.add(sensor.coord)
-    #     coords.add(sensor.b_coord)
-    #     for coord in combinations_with_replacement(
-    #         [
-    #             i
-    #             for i in range(
-    #                 -sensor.manhattan_distance, sensor.manhattan_distance + 1
-    #             )
-    #         ],
-    #         2,
-    #     ):
-    #         coords.add((sensor.coord[0] + coord[0], sensor.coord[1] + coord[1]))
+    y = 10
     min_x = sensors[0].coord[0]
     max_x = sensors[0].coord[0]
     count = 0
@@ -107,11 +94,18 @@ def day1(sensors: t.List[t.Type["Sensor"]]) -> int:
 
 
 def day2(sensors: t.List[t.Type["Sensor"]]) -> int:
-    return 0
+    coords = [
+        (x_coord, y_coord)
+        for x_coord in range(0, 4_000_000 + 1)
+        for y_coord in range(0, 4_000_000 + 1)
+    ]
+    for coord in coords:
+        if not any([sensor.coord_in_range(coord) for sensor in sensors]):
+            return 4_000_000 * coord[0] + coord[1]
 
 
 def main():
-    input = get_input("day15/input.txt")
+    input = get_input("day15/input2.txt")
     parsed_input = parse_input(input)
     day1_result = day1(copy.deepcopy(parsed_input))
     day2_result = day2(parsed_input)
