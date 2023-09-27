@@ -22,6 +22,10 @@ class Sensor:
     @staticmethod
     def manhattan_dictance_from_coord(start_coord, end_coord):
         return abs(start_coord[0] - end_coord[0]) + abs(start_coord[1] - end_coord[1])
+    
+    def coords_in_range(self):
+        x_coords = (i for i in range (self.coord[0] - self.manhattan_distance, self.coord[0] + self.manhattan_distance + 1))
+        y_coords = (i for i in range (self.coord[1] - self.manhattan_distance, self.coord[1] + self.manhattan_distance + 1))
 
 
 def is_sensor_in_y_range(sensor: t.Type["Sensor"], y_value: int) -> bool:
@@ -97,9 +101,10 @@ def day2(sensors: t.List[t.Type["Sensor"]]) -> int:
     """Go around the perimeter of each sensor instead and if it's out of the range of all the sensors it's the correct position if >= 0 and <= 4000000"""
     coords = [
         (x_coord, y_coord)
-        for x_coord in range(0, 4_000_000 + 1)
-        for y_coord in range(0, 4_000_000 + 1)
+        for x_coord in range(0, 4000000 + 1)
+        for y_coord in range(0, 4000000 + 1)
     ]
+    #  Plan is to change the list to a numpy array, and use the perimeter of the sensors to mark off large areas of the coordinates
     for coord in coords:
         if not any([sensor.coord_in_range(coord) for sensor in sensors]):
             return 4_000_000 * coord[0] + coord[1]
